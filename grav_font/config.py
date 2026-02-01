@@ -22,7 +22,7 @@ class SimulationConfig:
     # Gravitational physics
     G: float = 100.0
     softening: float = 5.0
-    damping: float = 0.995
+    damping: float = 0.999999999  # Effectively no damping (preserves orbital energy)
     max_velocity: float = 500.0
 
     # Pen rendering

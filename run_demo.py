@@ -195,7 +195,9 @@ def main():
         print(f"\nRunning animated simulation ({args.steps} steps)...")
         print("Close the window to exit.")
 
-        animate_simulation(
+        # IMPORTANT: Store the animation object to prevent garbage collection
+        # Without this reference, Python's GC may delete the animation before plt.show()
+        _anim = animate_simulation(  # noqa: F841
             simulator,
             glyph=glyph if not args.no_glyph else None,
             n_steps=args.steps,
@@ -204,6 +206,7 @@ def main():
         )
 
         show_plot()
+        del _anim  # Explicit cleanup after show
     else:
         # Static visualization
         print(f"\nRunning simulation ({args.steps} steps)...")

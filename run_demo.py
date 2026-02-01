@@ -141,6 +141,12 @@ def main():
         default=16,
         help="Milliseconds between animation frames (default: 16 = ~60fps)",
     )
+    parser.add_argument(
+        "--blur",
+        type=float,
+        default=0.0,
+        help="Gaussian blur sigma applied to pen trail (default: 0 = no blur)",
+    )
 
     args = parser.parse_args()
 
@@ -275,6 +281,7 @@ def main():
                 glyph,
                 trajectory,
                 stroke_width=args.stroke_width,
+                blur=args.blur,
                 save_path=args.save if args.save else None,
             )
         else:

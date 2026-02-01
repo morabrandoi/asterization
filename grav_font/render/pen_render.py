@@ -22,6 +22,7 @@ def render_trajectory(
     color: tuple[int, int, int, int] = (255, 255, 255, 255),
     background: tuple[int, int, int, int] = (0, 0, 0, 255),
     antialias: bool = True,
+    blur: float = 0.0,
 ) -> np.ndarray:
     """
     Render a trajectory as an antialiased stroke using skia.
@@ -33,12 +34,13 @@ def render_trajectory(
         color: RGBA color tuple for the stroke (0-255)
         background: RGBA color tuple for the background (0-255)
         antialias: Whether to use antialiasing
+        blur: Gaussian blur sigma (0 = no blur)
 
     Returns:
         Grayscale numpy array of shape (canvas_size, canvas_size) in [0, 1]
     """
     if not SKIA_AVAILABLE:
-        return _render_trajectory_fallback(trajectory, canvas_size, stroke_width)
+        return _render_trajectory_fallback(trajectory, canvas_size, stroke_width, blur)
 
     if len(trajectory) < 2:
         return np.zeros((canvas_size, canvas_size), dtype=np.float32)
@@ -66,6 +68,10 @@ def render_trajectory(
     paint.setStrokeCap(skia.Paint.kRound_Cap)
     paint.setStrokeJoin(skia.Paint.kRound_Join)
 
+    # Apply blur filter if requested
+    if blur > 0:
+        paint.setMaskFilter(skia.MaskFilter.MakeBlur(skia.kNormal_BlurStyle, blur))
+
     # Draw path
     canvas.drawPath(path, paint)
 
@@ -86,6 +92,7 @@ def _render_trajectory_fallback(
     trajectory: np.ndarray,
     canvas_size: int = 256,
     stroke_width: float = 2.0,
+    blur: float = 0.0,
 ) -> np.ndarray:
     """
     Fallback renderer using numpy when skia is not available.
@@ -106,7 +113,7 @@ def _render_trajectory_fallback(
         _draw_line(canvas, x0, y0, x1, y1)
 
     # Apply gaussian blur to approximate stroke width and antialiasing
-    sigma = stroke_width / 2.0
+    sigma = stroke_width / 2.0 + blur
     if sigma > 0:
         canvas = ndimage.gaussian_filter(canvas, sigma=sigma)
 

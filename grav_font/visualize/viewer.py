@@ -123,6 +123,7 @@ def visualize_comparison(
     glyph: GlyphData,
     trajectory: np.ndarray,
     stroke_width: float = 2.0,
+    blur: float = 0.0,
     figsize: tuple[float, float] = (15, 5),
     save_path: str | Path | None = None,
     dpi: int = 150,
@@ -134,6 +135,7 @@ def visualize_comparison(
         glyph: GlyphData with target glyph
         trajectory: Trajectory array
         stroke_width: Width of pen stroke for rendering
+        blur: Gaussian blur sigma for pen trail
         figsize: Figure size
         save_path: Optional path to save figure
         dpi: DPI for saved figure
@@ -148,6 +150,7 @@ def visualize_comparison(
         trajectory,
         canvas_size=canvas_size,
         stroke_width=stroke_width,
+        blur=blur,
     )
 
     fig, axes = plt.subplots(1, 3, figsize=figsize)

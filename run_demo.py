@@ -24,6 +24,8 @@ import argparse
 import sys
 from pathlib import Path
 
+import numpy as np
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -115,6 +117,18 @@ def main():
         action="store_true",
         help="List available presets and exit",
     )
+    parser.add_argument(
+        "--pen-angle",
+        type=float,
+        default=None,
+        help="Initial pen velocity angle in degrees (0=right, 90=down, 180=left, 270=up)",
+    )
+    parser.add_argument(
+        "--pen-speed",
+        type=float,
+        default=None,
+        help="Initial pen speed (overrides preset default)",
+    )
 
     args = parser.parse_args()
 
@@ -179,6 +193,34 @@ def main():
     for i, p in enumerate(particles):
         ptype = "pen" if p.is_pen else "mass"
         print(f"    [{i}] {ptype}: pos={p.position}, mass={p.mass}")
+
+    # Override pen velocity if --pen-angle or --pen-speed specified
+    if args.pen_angle is not None or args.pen_speed is not None:
+        import math
+
+        for p in particles:
+            if p.is_pen:
+                # Get current speed or use override
+                current_speed = np.linalg.norm(p.velocity)
+                speed = args.pen_speed if args.pen_speed is not None else current_speed
+
+                # Get angle (default to current direction or 0)
+                if args.pen_angle is not None:
+                    angle_rad = math.radians(args.pen_angle)
+                else:
+                    angle_rad = math.atan2(p.velocity[1], p.velocity[0])
+
+                # Set new velocity
+                p.velocity = np.array(
+                    [
+                        speed * math.cos(angle_rad),
+                        speed * math.sin(angle_rad),
+                    ]
+                )
+                print(
+                    f"  Pen velocity override: angle={math.degrees(angle_rad):.1f}°, "
+                    f"speed={speed:.1f}, vel={p.velocity}"
+                )
 
     # Create simulation config
     config = SimulationConfig(

@@ -129,6 +129,18 @@ def main():
         default=None,
         help="Initial pen speed (overrides preset default)",
     )
+    parser.add_argument(
+        "--dt",
+        type=float,
+        default=None,
+        help="Physics timestep - larger = faster but less accurate (default: 0.01)",
+    )
+    parser.add_argument(
+        "--interval",
+        type=int,
+        default=16,
+        help="Milliseconds between animation frames (default: 16 = ~60fps)",
+    )
 
     args = parser.parse_args()
 
@@ -227,6 +239,7 @@ def main():
         canvas_size=args.canvas_size,
         n_steps=args.steps,
         stroke_width=args.stroke_width,
+        dt=args.dt if args.dt is not None else 0.01,
     )
 
     # Create simulator
@@ -243,7 +256,7 @@ def main():
             simulator,
             glyph=glyph if not args.no_glyph else None,
             n_steps=args.steps,
-            interval=16,  # ~60 fps
+            interval=args.interval,
             save_path=args.save,
         )
 

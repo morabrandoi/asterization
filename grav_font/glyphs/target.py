@@ -9,7 +9,6 @@ Provides functionality to:
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Tuple, Union
 
 import freetype
 import numpy as np
@@ -22,12 +21,12 @@ class GlyphData:
 
     character: str
     image: np.ndarray  # Grayscale [0, 1] float32
-    distance_field: Optional[np.ndarray] = None
-    gradient_field: Optional[np.ndarray] = None
-    bbox: Optional[Tuple[int, int, int, int]] = None
+    distance_field: np.ndarray | None = None
+    gradient_field: np.ndarray | None = None
+    bbox: tuple[int, int, int, int] | None = None
 
     @property
-    def center(self) -> Tuple[float, float]:
+    def center(self) -> tuple[float, float]:
         """Return the center of the glyph bounding box."""
         if self.bbox is not None:
             x_min, y_min, x_max, y_max = self.bbox
@@ -37,7 +36,7 @@ class GlyphData:
         return (w / 2, h / 2)
 
 
-def load_font(font_path: Union[str, Path], size: int = 200) -> freetype.Face:
+def load_font(font_path: str | Path, size: int = 200) -> freetype.Face:
     """
     Load a font file and set the character size.
 
@@ -196,9 +195,7 @@ def compute_gradient_field(glyph_data: GlyphData) -> GlyphData:
         ValueError: If distance_field has not been computed
     """
     if glyph_data.distance_field is None:
-        raise ValueError(
-            "distance_field must be computed first (call compute_distance_field)"
-        )
+        raise ValueError("distance_field must be computed first (call compute_distance_field)")
 
     # Compute gradient (returns dy, dx)
     grad_y, grad_x = np.gradient(glyph_data.distance_field)
@@ -221,7 +218,7 @@ def compute_gradient_field(glyph_data: GlyphData) -> GlyphData:
 
 
 def load_glyph(
-    font_path: Union[str, Path],
+    font_path: str | Path,
     character: str,
     canvas_size: int = 256,
     font_size: int = 200,

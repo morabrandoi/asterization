@@ -5,8 +5,6 @@ Renders particle trajectories as antialiased strokes on a canvas,
 producing grayscale images that can be compared with target glyphs.
 """
 
-from typing import Optional, Tuple
-
 import numpy as np
 
 try:
@@ -21,8 +19,8 @@ def render_trajectory(
     trajectory: np.ndarray,
     canvas_size: int = 256,
     stroke_width: float = 2.0,
-    color: Tuple[int, int, int, int] = (255, 255, 255, 255),
-    background: Tuple[int, int, int, int] = (0, 0, 0, 255),
+    color: tuple[int, int, int, int] = (255, 255, 255, 255),
+    background: tuple[int, int, int, int] = (0, 0, 0, 255),
     antialias: bool = True,
 ) -> np.ndarray:
     """
@@ -265,11 +263,11 @@ def trajectory_to_image(
 def render_particles(
     positions: np.ndarray,
     canvas_size: int = 256,
-    masses: Optional[np.ndarray] = None,
-    pen_indices: Optional[list] = None,
+    masses: np.ndarray | None = None,
+    pen_indices: list | None = None,
     base_radius: float = 5.0,
-    pen_color: Tuple[int, int, int, int] = (255, 100, 100, 255),
-    mass_color: Tuple[int, int, int, int] = (100, 100, 255, 255),
+    pen_color: tuple[int, int, int, int] = (255, 100, 100, 255),
+    mass_color: tuple[int, int, int, int] = (100, 100, 255, 255),
 ) -> np.ndarray:
     """
     Render particle positions as circles.
@@ -287,9 +285,7 @@ def render_particles(
         RGBA numpy array of shape (canvas_size, canvas_size, 4)
     """
     if not SKIA_AVAILABLE:
-        return _render_particles_fallback(
-            positions, canvas_size, masses, pen_indices, base_radius
-        )
+        return _render_particles_fallback(positions, canvas_size, masses, pen_indices, base_radius)
 
     pen_indices = pen_indices or []
 
@@ -330,8 +326,8 @@ def render_particles(
 def _render_particles_fallback(
     positions: np.ndarray,
     canvas_size: int = 256,
-    masses: Optional[np.ndarray] = None,
-    pen_indices: Optional[list] = None,
+    masses: np.ndarray | None = None,
+    pen_indices: list | None = None,
     base_radius: float = 5.0,
 ) -> np.ndarray:
     """Fallback particle renderer using numpy."""

@@ -6,7 +6,6 @@ display particle trajectories, glyph targets, and simulation state.
 """
 
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,11 +17,11 @@ from ..render.pen_render import render_trajectory
 
 
 def visualize_static(
-    glyph: Optional[GlyphData] = None,
-    trajectory: Optional[np.ndarray] = None,
-    particles: Optional[List[Particle]] = None,
+    glyph: GlyphData | None = None,
+    trajectory: np.ndarray | None = None,
+    particles: list[Particle] | None = None,
     title: str = "Gravitational Font Tracing",
-    figsize: Tuple[float, float] = (10, 10),
+    figsize: tuple[float, float] = (10, 10),
     show_glyph: bool = True,
     show_trajectory: bool = True,
     show_particles: bool = True,
@@ -31,7 +30,7 @@ def visualize_static(
     trajectory_linewidth: float = 1.0,
     glyph_cmap: str = "gray",
     glyph_alpha: float = 0.5,
-    save_path: Optional[Union[str, Path]] = None,
+    save_path: str | Path | None = None,
     dpi: int = 150,
 ) -> plt.Figure:
     """
@@ -124,8 +123,8 @@ def visualize_comparison(
     glyph: GlyphData,
     trajectory: np.ndarray,
     stroke_width: float = 2.0,
-    figsize: Tuple[float, float] = (15, 5),
-    save_path: Optional[Union[str, Path]] = None,
+    figsize: tuple[float, float] = (15, 5),
+    save_path: str | Path | None = None,
     dpi: int = 150,
 ) -> plt.Figure:
     """
@@ -183,14 +182,14 @@ def visualize_comparison(
 
 def animate_simulation(
     simulator: Simulator,
-    glyph: Optional[GlyphData] = None,
+    glyph: GlyphData | None = None,
     n_steps: int = 500,
     interval: int = 20,
-    figsize: Tuple[float, float] = (8, 8),
-    trail_length: Optional[int] = None,
+    figsize: tuple[float, float] = (8, 8),
+    trail_length: int | None = None,
     show_velocity: bool = False,
     velocity_scale: float = 0.1,
-    save_path: Optional[Union[str, Path]] = None,
+    save_path: str | Path | None = None,
     fps: int = 30,
 ) -> FuncAnimation:
     """
@@ -240,7 +239,7 @@ def animate_simulation(
                 "",
                 xy=(0, 0),
                 xytext=(0, 0),
-                arrowprops=dict(arrowstyle="->", color="yellow", lw=1),
+                arrowprops={"arrowstyle": "->", "color": "yellow", "lw": 1},
             )
             velocity_arrows.append(arrow)
 
@@ -258,7 +257,7 @@ def animate_simulation(
         fontsize=10,
         verticalalignment="top",
         color="white",
-        bbox=dict(boxstyle="round", facecolor="black", alpha=0.5),
+        bbox={"boxstyle": "round", "facecolor": "black", "alpha": 0.5},
     )
 
     def init():
@@ -301,7 +300,9 @@ def animate_simulation(
 
         # Update velocity arrows
         if show_velocity:
-            for i, (p, arrow) in enumerate(zip(simulator.particles, velocity_arrows)):
+            for _i, (p, arrow) in enumerate(
+                zip(simulator.particles, velocity_arrows, strict=False)
+            ):
                 arrow.xy = p.position + p.velocity * velocity_scale
                 arrow.xyann = p.position
 
@@ -332,8 +333,8 @@ def animate_simulation(
 
 def visualize_distance_field(
     glyph: GlyphData,
-    figsize: Tuple[float, float] = (12, 4),
-    save_path: Optional[Union[str, Path]] = None,
+    figsize: tuple[float, float] = (12, 4),
+    save_path: str | Path | None = None,
     dpi: int = 150,
 ) -> plt.Figure:
     """
@@ -413,9 +414,9 @@ def visualize_distance_field(
 def visualize_trajectory_evolution(
     trajectory: np.ndarray,
     n_frames: int = 6,
-    glyph: Optional[GlyphData] = None,
-    figsize: Tuple[float, float] = (15, 3),
-    save_path: Optional[Union[str, Path]] = None,
+    glyph: GlyphData | None = None,
+    figsize: tuple[float, float] = (15, 3),
+    save_path: str | Path | None = None,
     dpi: int = 150,
 ) -> plt.Figure:
     """
@@ -441,7 +442,7 @@ def visualize_trajectory_evolution(
     if glyph is not None:
         canvas_size = glyph.image.shape[0]
 
-    for ax, idx in zip(axes, indices):
+    for ax, idx in zip(axes, indices, strict=False):
         if glyph is not None:
             ax.imshow(
                 glyph.image,

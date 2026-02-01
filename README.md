@@ -50,11 +50,29 @@ uv venv --python 3.11
 # Activate the virtual environment
 source .venv/bin/activate
 
-# Install dependencies
+# Install dependencies (includes ruff for linting/formatting)
 uv pip install -r requirements.txt
 
-# Or install as editable package (recommended)
+# Or install as editable package
 uv pip install -e .
+```
+
+### Linting & Formatting
+
+The project uses **ruff** for fast linting and formatting (replaces flake8 + black + isort):
+
+```bash
+# Check for lint errors
+ruff check .
+
+# Auto-fix lint errors + format code
+ruff check --fix .
+ruff format .
+
+# Or use the Makefile shortcuts:
+make lint          # Check for issues
+make fix           # Auto-fix everything
+make check         # Full check (lint + format + mypy)
 ```
 
 ---

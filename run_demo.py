@@ -225,9 +225,7 @@ def main():
                 glyph=glyph if not args.no_glyph else None,
                 trajectory=trajectory,
                 particles=simulator.particles,
-                title=(
-                    f"Gravitational Trace: '{args.char}'" if glyph else "Orbital Art"
-                ),
+                title=(f"Gravitational Trace: '{args.char}'" if glyph else "Orbital Art"),
                 save_path=args.save if args.save else None,
             )
 
@@ -290,6 +288,7 @@ def demo_all_presets():
     Run a demo showing all presets side by side.
     """
     import matplotlib.pyplot as plt
+
     from grav_font.config import SimulationConfig
     from grav_font.physics.simulator import Simulator
     from grav_font.presets import PRESETS

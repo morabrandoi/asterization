@@ -1,9 +1,9 @@
 """Glyph loading and rasterization module."""
 
 from .target import (
+    GlyphData,
     compute_distance_field,
     compute_gradient_field,
-    GlyphData,
     load_font,
     rasterize_glyph,
 )

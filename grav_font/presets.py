@@ -8,8 +8,6 @@ Provides ready-to-use particle setups for various orbital patterns:
 - Glyph-centered configurations
 """
 
-from typing import List, Optional, Tuple
-
 import numpy as np
 
 from .config import DEFAULT_CONFIG
@@ -17,12 +15,12 @@ from .physics.simulator import Particle
 
 
 def single_orbit(
-    center: Tuple[float, float] = (128, 128),
+    center: tuple[float, float] = (128, 128),
     orbital_radius: float = 60,
     central_mass: float = 50.0,
     pen_mass: float = 1.0,
     clockwise: bool = False,
-) -> List[Particle]:
+) -> list[Particle]:
     """
     Create a simple two-body system with pen orbiting a central mass.
 
@@ -68,14 +66,14 @@ def single_orbit(
 
 
 def binary_system(
-    center: Tuple[float, float] = (128, 128),
+    center: tuple[float, float] = (128, 128),
     separation: float = 80,
     mass1: float = 30.0,
     mass2: float = 30.0,
-    pen_offset: Tuple[float, float] = (0, 60),
-    pen_velocity: Tuple[float, float] = (35, 0),
+    pen_offset: tuple[float, float] = (0, 60),
+    pen_velocity: tuple[float, float] = (35, 0),
     pen_mass: float = 1.0,
-) -> List[Particle]:
+) -> list[Particle]:
     """
     Create a binary star system with two fixed masses and a pen particle.
 
@@ -124,13 +122,13 @@ def binary_system(
 
 
 def three_body_triangle(
-    center: Tuple[float, float] = (128, 128),
+    center: tuple[float, float] = (128, 128),
     radius: float = 70,
-    masses: Tuple[float, float, float] = (25.0, 25.0, 25.0),
-    pen_offset: Tuple[float, float] = (0, 0),
-    pen_velocity: Tuple[float, float] = (25, 15),
+    masses: tuple[float, float, float] = (25.0, 25.0, 25.0),
+    pen_offset: tuple[float, float] = (0, 0),
+    pen_velocity: tuple[float, float] = (25, 15),
     pen_mass: float = 1.0,
-) -> List[Particle]:
+) -> list[Particle]:
     """
     Create a three-body system with masses at triangle vertices.
 
@@ -176,13 +174,13 @@ def three_body_triangle(
 
 
 def four_corners(
-    center: Tuple[float, float] = (128, 128),
+    center: tuple[float, float] = (128, 128),
     half_size: float = 60,
     corner_mass: float = 20.0,
-    pen_offset: Tuple[float, float] = (30, 30),
-    pen_velocity: Tuple[float, float] = (20, -20),
+    pen_offset: tuple[float, float] = (30, 30),
+    pen_velocity: tuple[float, float] = (20, -20),
     pen_mass: float = 1.0,
-) -> List[Particle]:
+) -> list[Particle]:
     """
     Create a system with masses at four corners of a square.
 
@@ -231,12 +229,12 @@ def four_corners(
 
 
 def spiral_inward(
-    center: Tuple[float, float] = (128, 128),
+    center: tuple[float, float] = (128, 128),
     start_radius: float = 100,
     central_mass: float = 80.0,
     pen_mass: float = 1.0,
     spiral_factor: float = 0.7,
-) -> List[Particle]:
+) -> list[Particle]:
     """
     Create a system that produces inward spiraling motion.
 
@@ -278,13 +276,13 @@ def spiral_inward(
 
 
 def glyph_centered(
-    glyph_center: Tuple[float, float],
+    glyph_center: tuple[float, float],
     canvas_size: int = 256,
     n_attractors: int = 3,
     attractor_mass: float = 25.0,
     pen_mass: float = 1.0,
     pen_speed: float = 30.0,
-) -> List[Particle]:
+) -> list[Particle]:
     """
     Create a system with attractors distributed around a glyph center.
 
@@ -336,11 +334,11 @@ def glyph_centered(
 def random_system(
     canvas_size: int = 256,
     n_attractors: int = 3,
-    mass_range: Tuple[float, float] = (15.0, 40.0),
-    pen_speed_range: Tuple[float, float] = (20.0, 50.0),
+    mass_range: tuple[float, float] = (15.0, 40.0),
+    pen_speed_range: tuple[float, float] = (20.0, 50.0),
     margin: float = 40.0,
-    seed: Optional[int] = None,
-) -> List[Particle]:
+    seed: int | None = None,
+) -> list[Particle]:
     """
     Create a random particle configuration.
 
@@ -403,12 +401,12 @@ PRESETS = {
 }
 
 
-def list_presets() -> List[str]:
+def list_presets() -> list[str]:
     """Return list of available preset names."""
     return list(PRESETS.keys())
 
 
-def get_preset(name: str, **kwargs) -> List[Particle]:
+def get_preset(name: str, **kwargs) -> list[Particle]:
     """
     Get particles from a named preset.
 

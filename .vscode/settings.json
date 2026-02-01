@@ -1,0 +1,22 @@
+{
+    // Python interpreter - use the venv
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    // Disable built-in linters (use ruff instead)
+    "python.linting.enabled": false,
+    "python.linting.flake8Enabled": false,
+    "python.linting.pylintEnabled": false,
+    // Format on save with ruff
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "always",
+            "source.organizeImports": "always"
+        }
+    },
+    // Editor settings
+    "editor.rulers": [
+        100
+    ],
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true
+}

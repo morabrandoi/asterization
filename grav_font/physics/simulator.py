@@ -11,7 +11,6 @@ Implements softened N-body gravitational physics with:
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional, Tuple
 
 import numpy as np
 
@@ -65,8 +64,8 @@ class SimulationState:
     """Snapshot of the simulation state at a point in time."""
 
     time: float
-    particles: List[Particle]
-    pen_position: Optional[np.ndarray] = None
+    particles: list[Particle]
+    pen_position: np.ndarray | None = None
 
 
 class Simulator:
@@ -82,8 +81,8 @@ class Simulator:
 
     def __init__(
         self,
-        particles: List[Particle],
-        config: Optional[SimulationConfig] = None,
+        particles: list[Particle],
+        config: SimulationConfig | None = None,
         integration_method: IntegrationMethod = IntegrationMethod.EULER,
     ):
         """
@@ -100,8 +99,8 @@ class Simulator:
         self.integration_method = integration_method
 
         self.time = 0.0
-        self.trajectory: List[np.ndarray] = []
-        self.history: List[SimulationState] = []
+        self.trajectory: list[np.ndarray] = []
+        self.history: list[SimulationState] = []
 
         # Cache pen particle index for fast access
         self._pen_indices = [i for i, p in enumerate(self.particles) if p.is_pen]
@@ -212,9 +211,7 @@ class Simulator:
             # Clamp velocity if needed
             speed = np.linalg.norm(particle.velocity)
             if speed > self.config.max_velocity:
-                particle.velocity = (
-                    particle.velocity / speed
-                ) * self.config.max_velocity
+                particle.velocity = (particle.velocity / speed) * self.config.max_velocity
 
             # Update position
             particle.position += particle.velocity * dt
@@ -298,7 +295,7 @@ class Simulator:
 
     def run(
         self,
-        n_steps: Optional[int] = None,
+        n_steps: int | None = None,
         record_history: bool = False,
         history_interval: int = 10,
     ) -> np.ndarray:
@@ -349,7 +346,7 @@ class Simulator:
         self.history = []
         self._record_pen_position()
 
-    def set_initial_conditions(self, particles: List[Particle]) -> None:
+    def set_initial_conditions(self, particles: list[Particle]) -> None:
         """
         Set new initial conditions and reset the simulation.
 
@@ -362,12 +359,12 @@ class Simulator:
 
 
 def create_orbital_system(
-    center: Tuple[float, float] = (128, 128),
+    center: tuple[float, float] = (128, 128),
     orbital_radius: float = 60,
     central_mass: float = 50.0,
     pen_mass: float = 1.0,
-    pen_speed: Optional[float] = None,
-) -> List[Particle]:
+    pen_speed: float | None = None,
+) -> list[Particle]:
     """
     Create a simple two-body orbital system.
 
@@ -414,14 +411,14 @@ def create_orbital_system(
 
 
 def create_binary_system(
-    center: Tuple[float, float] = (128, 128),
+    center: tuple[float, float] = (128, 128),
     separation: float = 80,
     mass1: float = 30.0,
     mass2: float = 30.0,
-    pen_offset: Tuple[float, float] = (0, 80),
+    pen_offset: tuple[float, float] = (0, 80),
     pen_mass: float = 1.0,
-    pen_velocity: Tuple[float, float] = (30, 0),
-) -> List[Particle]:
+    pen_velocity: tuple[float, float] = (30, 0),
+) -> list[Particle]:
     """
     Create a binary star system with a pen particle.
 
@@ -469,13 +466,13 @@ def create_binary_system(
 
 
 def create_three_body_system(
-    center: Tuple[float, float] = (128, 128),
+    center: tuple[float, float] = (128, 128),
     radius: float = 60,
-    masses: Tuple[float, float, float] = (25.0, 25.0, 25.0),
-    pen_offset: Tuple[float, float] = (0, 0),
+    masses: tuple[float, float, float] = (25.0, 25.0, 25.0),
+    pen_offset: tuple[float, float] = (0, 0),
     pen_mass: float = 1.0,
-    pen_velocity: Tuple[float, float] = (20, 20),
-) -> List[Particle]:
+    pen_velocity: tuple[float, float] = (20, 20),
+) -> list[Particle]:
     """
     Create a three-body system with masses in a triangle and a pen particle.
 

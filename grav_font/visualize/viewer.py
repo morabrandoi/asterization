@@ -190,6 +190,7 @@ def animate_simulation(
     interval: int = 20,
     figsize: tuple[float, float] = (8, 8),
     trail_length: int | None = None,
+    stroke_width: float = 1.0,
     show_velocity: bool = False,
     velocity_scale: float = 0.1,
     save_path: str | Path | None = None,
@@ -205,6 +206,7 @@ def animate_simulation(
         interval: Milliseconds between frames
         figsize: Figure size
         trail_length: Number of trajectory points to show (None = all)
+        stroke_width: Width of the pen trail line
         show_velocity: Whether to show velocity vectors
         velocity_scale: Scale factor for velocity vectors
         save_path: Optional path to save animation (gif or mp4)
@@ -231,7 +233,7 @@ def animate_simulation(
         )
 
     # Initialize plot elements
-    (trajectory_line,) = ax.plot([], [], "c-", alpha=0.7, linewidth=1)
+    (trajectory_line,) = ax.plot([], [], "c-", alpha=0.7, linewidth=stroke_width)
     pen_scatter = ax.scatter([], [], c="red", s=30, zorder=10)
     mass_scatter = ax.scatter([], [], c="blue", s=100, zorder=9)
 

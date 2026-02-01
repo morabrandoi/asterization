@@ -263,6 +263,7 @@ def main():
             glyph=glyph if not args.no_glyph else None,
             n_steps=args.steps,
             interval=args.interval,
+            stroke_width=args.stroke_width,
             save_path=args.save,
         )
 

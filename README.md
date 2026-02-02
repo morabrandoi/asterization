@@ -50,7 +50,7 @@ uv venv --python 3.11
 # Activate the virtual environment
 source .venv/bin/activate
 
-# Install dependencies (includes ruff for linting/formatting)
+# Install dependencies
 uv pip install -r requirements.txt
 
 # Or install as editable package
@@ -59,20 +59,12 @@ uv pip install -e .
 
 ### Linting & Formatting
 
-The project uses **ruff** for fast linting and formatting (replaces flake8 + black + isort):
+The project uses **ruff** for linting and formatting:
 
 ```bash
-# Check for lint errors
-ruff check .
-
-# Auto-fix lint errors + format code
-ruff check --fix .
-ruff format .
-
-# Or use the Makefile shortcuts:
-make lint          # Check for issues
-make fix           # Auto-fix everything
-make check         # Full check (lint + format + mypy)
+make lint    # Check for issues
+make fix     # Auto-fix everything
+make check   # Full check (lint + format + mypy)
 ```
 
 ---
@@ -92,39 +84,222 @@ python run_demo.py --font fonts/Lorestta.otf --char A --animate
 # Save output
 python run_demo.py --font fonts/Lorestta.otf --save output.png
 python run_demo.py --font fonts/Lorestta.otf --animate --save trace.gif
-
-# Try different presets
-python run_demo.py --preset single_orbit
-python run_demo.py --preset binary_system
-python run_demo.py --preset three_body_triangle
-python run_demo.py --preset four_corners
-python run_demo.py --preset spiral_inward
-python run_demo.py --preset random_system --seed 42
-
-# View all presets side-by-side
-python run_demo.py --demo-all-presets
 ```
+
+---
+
+## Visualization Modes: Static vs Animated
+
+The demo has two distinct visualization modes with different rendering pipelines:
+
+### Static Mode (default)
+
+Runs the **entire simulation first**, then renders the complete trajectory as a single image.
+
+```bash
+python run_demo.py --font fonts/Lorestta.otf --char A
+```
+
+**How it works:**
+
+1. Simulation runs for all `--steps` (default: 2000)
+2. Full trajectory is captured as a numpy array
+3. **Skia** renders the trajectory as an antialiased stroke
+4. Matplotlib displays the final result
+
+**Best for:**
+
+- High-quality output images
+- Blur effects (`--blur`)
+- Side-by-side glyph comparison
+- Saving to PNG
+
+**Supports:** `--stroke-width`, `--blur`
+
+---
+
+### Animated Mode (`--animate`)
+
+Runs the simulation **step-by-step in real-time**, drawing the trajectory as it evolves.
+
+```bash
+python run_demo.py --font fonts/Lorestta.otf --char A --animate
+```
+
+**How it works:**
+
+1. Simulation advances one step per frame
+2. **Matplotlib** draws the trajectory line directly (no Skia)
+3. Display updates in real-time via `FuncAnimation`
+
+**Best for:**
+
+- Watching orbital dynamics unfold
+- Debugging particle behavior
+- Saving to GIF/MP4
+
+**Supports:** `--stroke-width`, `--interval` (frame timing)
+
+> **Note:** `--blur` only works in static mode (Skia feature). Animation uses Matplotlib's line renderer.
 
 ---
 
 ## CLI Reference
 
-```
-python run_demo.py --help
+### Basic Options
 
-Options:
-  --font, -f        Path to TTF/OTF font file
-  --char, -c        Character to trace (default: A)
-  --preset, -p      Particle configuration preset
-  --steps, -n       Number of simulation steps (default: 2000)
-  --animate, -a     Show animated simulation
-  --save, -s        Save output to file (png, gif, mp4)
-  --canvas-size     Canvas size in pixels (default: 256)
-  --font-size       Font size for rendering (default: 200)
-  --stroke-width    Pen stroke width (default: 1.5)
-  --no-glyph        Hide glyph background (pure orbital art)
-  --seed            Random seed for random_system preset
-  --list-presets    List available presets
+| Flag             | Short | Default               | Description                                       |
+| ---------------- | ----- | --------------------- | ------------------------------------------------- |
+| `--font`         | `-f`  | None                  | Path to TTF/OTF font file                         |
+| `--char`         | `-c`  | `A`                   | Character to trace                                |
+| `--preset`       | `-p`  | `three_body_triangle` | Particle configuration preset                     |
+| `--steps`        | `-n`  | `2000`                | Number of simulation steps                        |
+| `--animate`      | `-a`  | off                   | Show real-time animation instead of static result |
+| `--save`         | `-s`  | None                  | Save output to file (`.png`, `.gif`, `.mp4`)      |
+| `--no-glyph`     |       | off                   | Hide glyph background (pure orbital art)          |
+| `--list-presets` |       |                       | List available presets and exit                   |
+
+### Canvas & Font
+
+| Flag            | Default | Description                    |
+| --------------- | ------- | ------------------------------ |
+| `--canvas-size` | `256`   | Canvas size in pixels (square) |
+| `--font-size`   | `200`   | Font size for glyph rendering  |
+
+### Pen Initial Conditions
+
+Override the preset's default pen velocity:
+
+| Flag          | Default       | Description                       |
+| ------------- | ------------- | --------------------------------- |
+| `--pen-angle` | (from preset) | Initial velocity angle in degrees |
+| `--pen-speed` | (from preset) | Initial velocity magnitude        |
+
+**Angle reference:**
+
+- `0°` = right (→)
+- `90°` = down (↓)
+- `180°` = left (←)
+- `270°` = up (↑)
+
+```bash
+# Break out of symmetric equilibrium
+python run_demo.py --preset three_body_triangle --pen-angle 73 --pen-speed 30
+```
+
+### Physics Simulation
+
+| Flag     | Default | Description                                                            |
+| -------- | ------- | ---------------------------------------------------------------------- |
+| `--dt`   | `0.01`  | Physics timestep. Larger = faster movement per step, but less accurate |
+| `--seed` | None    | Random seed for `random_system` preset (reproducibility)               |
+
+```bash
+# Faster simulation (pen covers more ground per frame)
+python run_demo.py --preset single_orbit --dt 0.03
+
+# Reproducible random system
+python run_demo.py --preset random_system --seed 42
+```
+
+### Rendering & Visual Style
+
+| Flag             | Default | Mode         | Description                                  |
+| ---------------- | ------- | ------------ | -------------------------------------------- |
+| `--stroke-width` | `1.5`   | Both         | Pen trail line thickness (pixels)            |
+| `--blur`         | `0.0`   | Static only  | Gaussian blur sigma for soft/glowy effect    |
+| `--interval`     | `16`    | Animate only | Milliseconds between frames (~60fps default) |
+
+```bash
+# Thick, soft strokes (static)
+python run_demo.py --font fonts/Lorestta.otf --char A --stroke-width 4 --blur 2
+
+# Slow-motion animation
+python run_demo.py --preset single_orbit --animate --interval 50
+
+# Thick animated line
+python run_demo.py --preset binary_system --animate --stroke-width 3
+```
+
+### Special Demo Modes
+
+| Flag                 | Description                                                |
+| -------------------- | ---------------------------------------------------------- |
+| `--demo-no-font`     | Quick test without font file (three-body system)           |
+| `--demo-all-presets` | Render all presets side-by-side, save to `all_presets.png` |
+
+---
+
+## Presets
+
+| Preset                | Bodies | Pattern             | Description                        |
+| --------------------- | ------ | ------------------- | ---------------------------------- |
+| `single_orbit`        | 1      | Circular/elliptical | Pen orbiting single central mass   |
+| `binary_system`       | 2      | Figure-8, chaotic   | Two fixed masses                   |
+| `three_body_triangle` | 3      | Chaotic, complex    | Equilateral triangle of masses     |
+| `four_corners`        | 4      | Bounded, structured | Masses at square corners           |
+| `spiral_inward`       | 1      | Inward spiral       | Sub-orbital velocity decays inward |
+| `glyph_centered`      | 3      | Glyph-following     | Attractors around glyph center     |
+| `random_system`       | 3      | Unpredictable       | Random positions/masses            |
+
+```bash
+# Try different presets
+python run_demo.py --preset single_orbit
+python run_demo.py --preset binary_system
+python run_demo.py --preset four_corners --animate
+python run_demo.py --preset random_system --seed 123
+```
+
+---
+
+## Examples
+
+### Basic Usage
+
+```bash
+# Simple trace of letter A
+python run_demo.py --font fonts/Lorestta.otf --char A
+
+# Animated with custom angle to avoid symmetric trap
+python run_demo.py --font fonts/Lorestta.otf --char X --animate --pen-angle 120
+
+# Pure orbital art (no glyph)
+python run_demo.py --preset three_body_triangle --no-glyph --steps 5000
+```
+
+### High Quality Output
+
+```bash
+# Larger canvas, thick soft strokes
+python run_demo.py --font fonts/Lorestta.otf --char B \
+  --canvas-size 512 --stroke-width 3 --blur 1.5 --save letter_b.png
+
+# Long simulation for complex patterns
+python run_demo.py --preset four_corners --steps 10000 --save orbit.png
+```
+
+### Animation Tuning
+
+```bash
+# Fast physics, normal playback
+python run_demo.py --preset single_orbit --animate --dt 0.02
+
+# Normal physics, slow-motion playback
+python run_demo.py --preset binary_system --animate --interval 40
+
+# Save as GIF
+python run_demo.py --preset three_body_triangle --animate --save trace.gif
+```
+
+### Experimentation
+
+```bash
+# Override pen initial conditions
+python run_demo.py --preset three_body_triangle \
+  --pen-angle 45 --pen-speed 50 --steps 3000
+
+# Reproducible random exploration
+python run_demo.py --preset random_system --seed 42 --animate
 ```
 
 ---
@@ -133,167 +308,42 @@ Options:
 
 ```
 asterization/
-├── pyproject.toml           # Project metadata & dependencies
-├── requirements.txt         # Dependencies for uv/pip
-├── run_demo.py              # CLI demo script
-├── fonts/                   # User font files (.ttf/.otf)
-└── grav_font/               # Main Python package
-    ├── config.py            # Configuration dataclasses
+├── pyproject.toml           # Project metadata & ruff config
+├── requirements.txt         # Dependencies
+├── Makefile                 # lint/fix/check shortcuts
+├── run_demo.py              # CLI entry point
+├── fonts/                   # Your font files (.ttf/.otf)
+└── grav_font/               # Main package
+    ├── config.py            # SimulationConfig dataclass
     ├── presets.py           # Preset particle configurations
     ├── glyphs/
-    │   └── target.py        # Font loading & glyph rasterization
+    │   └── target.py        # Font loading, SDF computation
     ├── physics/
-    │   └── simulator.py     # N-body gravitational simulator
+    │   └── simulator.py     # N-body gravitational engine
     ├── render/
-    │   └── pen_render.py    # Pen trail rendering (skia)
+    │   └── pen_render.py    # Skia-based trajectory rendering
     └── visualize/
         └── viewer.py        # Matplotlib visualization
 ```
 
 ---
 
-## Component Overview
+## Physics Details
 
-### `grav_font/config.py` — Configuration
+### Softened Gravity
 
-Centralized simulation parameters using dataclasses:
-
-| Class              | Parameters                                                                                                                                                     |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SimulationConfig` | `canvas_size`, `font_size`, `dt` (timestep), `n_steps`, `G` (gravitational constant), `softening`, `damping`, `max_velocity`, `stroke_width`, `stroke_opacity` |
-| `ParticleConfig`   | `default_mass`, `pen_mass`                                                                                                                                     |
-
-```python
-from grav_font.config import DEFAULT_CONFIG
-
-DEFAULT_CONFIG.G = 150.0  # Increase gravity
-DEFAULT_CONFIG.damping = 0.99  # More energy loss
+```
+F = G · m₁ · m₂ · r / (|r|² + ε²)^(3/2)
 ```
 
----
+- `G` = gravitational constant (default: 100.0)
+- `ε` = softening parameter (default: 5.0) — prevents singularity at r=0
+- Damping ≈ 1.0 (energy preserved for stable orbits)
 
-### `grav_font/glyphs/target.py` — Glyph Loading
+### Integration Methods
 
-Loads font files and converts characters to images.
-
-| Component                  | Purpose                                                                               |
-| -------------------------- | ------------------------------------------------------------------------------------- |
-| `GlyphData`                | Container: `character`, `image`, `distance_field`, `gradient_field`, `bbox`, `center` |
-| `load_font()`              | Load TTF/OTF via freetype-py                                                          |
-| `rasterize_glyph()`        | Render character to grayscale numpy array `[0,1]`                                     |
-| `compute_distance_field()` | Signed distance transform (negative inside, positive outside)                         |
-| `compute_gradient_field()` | Normalized gradient for force direction                                               |
-| `load_glyph()`             | Convenience function combining all steps                                              |
-
-```python
-from grav_font.glyphs import load_glyph
-
-glyph = load_glyph("fonts/Lorestta.otf", "A", canvas_size=256)
-print(glyph.center)  # (128.5, 130.0)
-```
-
----
-
-### `grav_font/physics/simulator.py` — Gravitational Simulation
-
-The core N-body physics engine.
-
-| Component           | Purpose                                                         |
-| ------------------- | --------------------------------------------------------------- |
-| `Particle`          | Dataclass: `position`, `velocity`, `mass`, `is_pen`, `is_fixed` |
-| `Simulator`         | Main simulation class with softened gravity                     |
-| `IntegrationMethod` | Enum: `EULER`, `RK4`                                            |
-
-**Physics:**
-
-- Softened gravity: `F = G·m₁·m₂·r / (|r|² + ε²)^(3/2)`
-- Velocity damping each timestep
-- Optional velocity clamping
-
-```python
-from grav_font.physics import Particle, Simulator
-
-pen = Particle([100, 100], [10, 0], mass=1.0, is_pen=True)
-attractor = Particle([128, 128], [0, 0], mass=50.0, is_fixed=True)
-
-sim = Simulator([pen, attractor])
-trajectory = sim.run(1000)  # Returns (1001, 2) numpy array
-```
-
----
-
-### `grav_font/presets.py` — Preset Configurations
-
-Ready-to-use particle setups:
-
-| Preset                  | Description                              |
-| ----------------------- | ---------------------------------------- |
-| `single_orbit()`        | Pen orbiting one central mass            |
-| `binary_system()`       | Two fixed masses, figure-8 patterns      |
-| `three_body_triangle()` | Three masses in triangle, chaotic orbits |
-| `four_corners()`        | Four masses at square corners            |
-| `spiral_inward()`       | Sub-orbital velocity → inward spiral     |
-| `glyph_centered()`      | Attractors around glyph center           |
-| `random_system()`       | Random positions/masses (seedable)       |
-
-```python
-from grav_font.presets import get_preset, list_presets
-
-print(list_presets())  # ['single_orbit', 'binary_system', ...]
-
-particles = get_preset("three_body_triangle", center=(128, 128))
-```
-
----
-
-### `grav_font/render/pen_render.py` — Pen Trail Rendering
-
-Renders trajectories as antialiased strokes using skia-python.
-
-| Function                         | Purpose                                   |
-| -------------------------------- | ----------------------------------------- |
-| `render_trajectory()`            | Draw trajectory as antialiased polyline   |
-| `render_trajectory_with_alpha()` | Alpha-blended (darker where pen overlaps) |
-| `trajectory_to_image()`          | Returns grayscale numpy array             |
-| `render_particles()`             | Draw particles as colored circles         |
-
-```python
-from grav_font.render import render_trajectory
-
-image = render_trajectory(trajectory, canvas_size=256, stroke_width=2.0)
-# Returns (256, 256) grayscale array [0, 1]
-```
-
----
-
-### `grav_font/visualize/viewer.py` — Visualization
-
-Matplotlib-based visualization and animation.
-
-| Function                           | Purpose                                     |
-| ---------------------------------- | ------------------------------------------- |
-| `visualize_static()`               | Static plot: glyph + trajectory + particles |
-| `visualize_comparison()`           | Side-by-side: target, rendered, RGB overlay |
-| `animate_simulation()`             | Real-time animation, save to GIF/MP4        |
-| `visualize_distance_field()`       | Show SDF and gradient quiver plot           |
-| `visualize_trajectory_evolution()` | Trajectory at multiple timepoints           |
-
-```python
-from grav_font.visualize import animate_simulation, show_plot
-
-anim = animate_simulation(simulator, glyph=glyph, n_steps=500)
-show_plot()
-```
-
----
-
-## How It Works
-
-1. **Load Glyph** — Rasterize font character to grayscale bitmap, compute distance field
-2. **Setup Physics** — Place gravitational bodies and "pen" particle using presets
-3. **Simulate** — Run N-body gravitational simulation with softening & damping
-4. **Render** — Draw pen trajectory as antialiased stroke via skia
-5. **Visualize** — Display static/animated result or save to file
+- **Euler** (default): Fast, good for visualization
+- **RK4**: More accurate, better energy conservation
 
 ---
 
@@ -307,6 +357,31 @@ show_plot()
 | `freetype-py`  | Font loading              |
 | `skia-python`  | Antialiased rendering     |
 | `scikit-image` | Image utilities           |
+| `ruff`         | Linting & formatting      |
+
+---
+
+## Troubleshooting
+
+### Animation doesn't play
+
+Make sure you're not running in a headless environment. The animation requires an interactive matplotlib backend.
+
+### Orbit decays into spiral
+
+Check `damping` in config — should be very close to `1.0` (default: `0.999999999`).
+
+### Pen stuck in equilibrium
+
+Use `--pen-angle` to break symmetry:
+
+```bash
+python run_demo.py --preset three_body_triangle --pen-angle 73
+```
+
+### Blur not working
+
+`--blur` only works in static mode (uses Skia). Animation mode uses Matplotlib's line renderer which doesn't support blur.
 
 ---
 
